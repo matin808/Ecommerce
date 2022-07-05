@@ -7,11 +7,11 @@ const Context = createContext();
 export const StateContext = ({ children }) => {
   const [showCart, setShowCart] = useState(false);
 
-  const [cartItems, setCartItems] = useState();
+  const [cartItems, setCartItems] = useState([]);
 
   const [totalPrice, setTotalPrice] = useState();
 
-  const [totalQuantities, setTotalQuantities] = useState();
+  const [totalQuantities, setTotalQuantities] = useState(0);
 
   const [qty, setQty] = useState(1);
 
@@ -20,16 +20,30 @@ export const StateContext = ({ children }) => {
       (item) => item._id === product._id
     );
 
-    if (checkProductInCart) {
-      totalQuantities(
-        (prevTotalPrice) => prevTotalPrice + product.price * quantity
-      );
-      setTotalQuantities(
-        (prevTotalQuantities) => prevTotalQuantities + quantity
-      );
+    setTotalPrice(
+      (prevTotalPrice) => prevTotalPrice + product.price * quantity
+    );
+    setTotalQuantities((prevTotalQuantities) => prevTotalQuantities + quantity);
 
-      // const updatedCartItems = cartItems.map()
+    // if Item already exits in the cart
+    if (checkProductInCart) {
+      const updatedCartItems = cartItems.map((cartProduct) => {
+        if (cartProduct._id === product._id)
+          return {
+            ...cartProduct,
+            quantity: cartProduct.quantity + quantity,
+          };
+      });
+
+      setCartItems(updatedCartItems);
     }
+    // if it does not exit in the cart
+    else {
+      product.quantity = quantity;
+
+      setCartItems([...cartItems, { ...product }]);
+    }
+    toast.success(`${qty} ${product.name} added to the cart.`);
   };
 
   const incQty = () => {
@@ -54,6 +68,8 @@ export const StateContext = ({ children }) => {
         qty,
         incQty,
         decQty,
+        onAdd,
+        setShowCart,
       }}
     >
       {children}
