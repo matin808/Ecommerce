@@ -9,12 +9,17 @@ export const StateContext = ({ children }) => {
 
   const [cartItems, setCartItems] = useState([]);
 
-  const [totalPrice, setTotalPrice] = useState();
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const [totalQuantities, setTotalQuantities] = useState(0);
 
   const [qty, setQty] = useState(1);
 
+  //
+  let foundProduct;
+  let index;
+
+  // Add Product in Cart Logic
   const onAdd = (product, quantity) => {
     const checkProductInCart = cartItems.find(
       (item) => item._id === product._id
@@ -46,10 +51,38 @@ export const StateContext = ({ children }) => {
     toast.success(`${qty} ${product.name} added to the cart.`);
   };
 
+  //
+  const toggleCartItemQuantity = (id, value) => {
+    foundProduct = cartItems.find((item) => item._id === id);
+    index = cartItems.findIndex((product) => product._id === id);
+    const newCartItems = cartItems.filter((item) => item._id !== id); // it delete our found product from cartItems Array as we are adding it in below code /1
+    if (value === "inc") {
+      setCartItems([
+        ...newCartItems,
+        { ...foundProduct, quantity: foundProduct.quantity + 1 }, // adding product /1
+      ]);
+      setTotalPrice((prevTotalPrice) => prevTotalPrice + foundProduct.price);
+      setTotalQuantities((prevTotalQuantities) => prevTotalQuantities + 1);
+    } else if (value === "dec") {
+      if (foundProduct.quantity > 1) {
+        setCartItems([
+          ...newCartItems,
+          { ...foundProduct, quantity: foundProduct.quantity - 1 },
+        ]);
+        setTotalPrice((prevTotalPrice) => prevTotalPrice - foundProduct.price);
+        setTotalQuantities((prevTotalQuantities) => prevTotalQuantities - 1);
+      }
+    }
+  };
+
+  //
+
+  // Increase Quantity
   const incQty = () => {
     setQty((prevQty) => prevQty + 1);
   };
 
+  // Decrease Quantity
   const decQty = () => {
     setQty((prevQty) => {
       if (prevQty - 1 < 1) return 1;
@@ -70,6 +103,7 @@ export const StateContext = ({ children }) => {
         decQty,
         onAdd,
         setShowCart,
+        toggleCartItemQuantity,
       }}
     >
       {children}
