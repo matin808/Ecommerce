@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 
 import { useStateContext } from "../context/StateContext";
 import { urlFor } from "../lib/client";
-
 import getStripe from "../lib/getStripe";
 
 const Cart = () => {
@@ -22,11 +21,12 @@ const Cart = () => {
     cartItems,
     setShowCart,
     toggleCartItemQuantity,
+    onRemove,
   } = useStateContext();
 
-  // handle stripe checkout logic
-
   const handleCheckout = async () => {
+    console.log(cartItems);
+    console.log(process.env.NEXT_PUBLIC_SANITY_TOKEN);
     const stripe = await getStripe();
 
     const response = await fetch("/api/stripe", {
@@ -79,20 +79,15 @@ const Cart = () => {
           {cartItems.length >= 1 &&
             cartItems.map((item) => (
               <div className="product" key={item._id}>
-                {/* Image Of the Cart Items */}
                 <img
                   src={urlFor(item?.image[0])}
                   className="cart-product-image"
-                  alt=""
                 />
-                {/* Details */}
                 <div className="item-desc">
                   <div className="flex top">
                     <h5>{item.name}</h5>
                     <h4>${item.price}</h4>
                   </div>
-
-                  {/* Quantity  */}
                   <div className="flex bottom">
                     <div>
                       <p className="quantity-desc">
@@ -104,7 +99,9 @@ const Cart = () => {
                         >
                           <AiOutlineMinus />
                         </span>
-                        <span className="num">{item.quantity}</span>
+                        <span className="num" onClick="">
+                          {item.quantity}
+                        </span>
                         <span
                           className="plus"
                           onClick={() =>
@@ -115,9 +112,11 @@ const Cart = () => {
                         </span>
                       </p>
                     </div>
-
-                    {/* Delete Cart Item */}
-                    <button type="button" onClick="" className="remove-item">
+                    <button
+                      type="button"
+                      className="remove-item"
+                      onClick={() => onRemove(item)}
+                    >
                       <TiDeleteOutline />
                     </button>
                   </div>
@@ -125,7 +124,6 @@ const Cart = () => {
               </div>
             ))}
         </div>
-
         {cartItems.length >= 1 && (
           <div className="cart-bottom">
             <div className="total">
